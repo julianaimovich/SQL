@@ -1,8 +1,9 @@
-import Pages.AuthPage;
+import Model.DatabaseHelper;
 import Pages.LoginPage;
 import com.codeborne.selenide.SelenideElement;
 import com.github.javafaker.Faker;
 import lombok.val;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
@@ -13,18 +14,23 @@ import static com.codeborne.selenide.Selenide.*;
 
 public class EnterPageTest {
 
-    @DisplayName("Should be successful")
+    @AfterEach
+    public void cleaningDB () throws SQLException {
+        DatabaseHelper.cleanDB();
+    }
+
     @Test
-    void shouldBeSuccessful () throws SQLException {
+    @DisplayName("Authorization should be successful")
+    void authorizationShouldBeSuccessful () throws SQLException {
         open("http://localhost:9999");
         val loginPage = new LoginPage();
-        LoginPage.dataFilling();
-        AuthPage.successAuth();
+        val authPage = loginPage.dataFilling();
+        authPage.successAuth();
         $(withText("Личный кабинет")).shouldBe(visible);
     }
 
-    @DisplayName("Error message should appear in case of 3 invalid codes")
     @Test
+    @DisplayName("Error message should appear in case of 3 invalid codes")
     void errorMessageShouldAppearInCaseOf3InvalidCodes () throws SQLException {
         val faker = new Faker();
 
@@ -34,7 +40,7 @@ public class EnterPageTest {
             SelenideElement codeField = $("[data-test-id=code] input");
             SelenideElement verifyButton = $("[data-test-id=action-verify]");
             val loginPage = new LoginPage();
-            LoginPage.dataFilling();
+            loginPage.dataFilling();
             codeField.setValue(faker.internet().password());
             verifyButton.click();
             i++;
